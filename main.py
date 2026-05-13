@@ -1,14 +1,15 @@
 import os
 import uuid
 import subprocess
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from docxtpl import DocxTemplate
 
 app = FastAPI(
     title="API Geradora de Recibos Domum Engenharia",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 API_SECRET_TOKEN = os.getenv("API_SECRET_TOKEN", "")
@@ -16,6 +17,8 @@ TEMPLATE_PATH = "templates/modelo_recibo_domum_automacao.docx"
 OUTPUT_DIR = "outputs"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
 
 class ReciboRequest(BaseModel):
@@ -40,12 +43,13 @@ def health_check():
     return {
         "status": "online",
         "service": "API Geradora de Recibos Domum Engenharia",
-        "output": "pdf"
+        "output": "pdf_link"
     }
 
 
 @app.post("/gerar-recibo")
 def gerar_recibo(
+    request: Request,
     dados: ReciboRequest,
     authorization: str = Header(default="")
 ):
@@ -113,8 +117,14 @@ def gerar_recibo(
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=500, detail="PDF não foi gerado corretamente.")
 
-    return FileResponse(
-        pdf_path,
-        media_type="application/pdf",
-        filename=pdf_filename
+    base_url = str(request.base_url).rstrip("/")
+    download_url = f"{base_url}/outputs/{pdf_filename}"
+
+    return JSONResponse(
+        content={
+            "status": "success",
+            "message": "Recibo gerado com sucesso em PDF.",
+            "arquivo": pdf_filename,
+            "download_url": download_url
+        }
     )
