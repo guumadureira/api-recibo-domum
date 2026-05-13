@@ -67,21 +67,25 @@ def gerar_recibo(
     doc = DocxTemplate(TEMPLATE_PATH)
 
     contexto = {
-        "NUMERO_RECIBO": dados.numero_recibo,
-        "NOME_CLIENTE": dados.nome_cliente,
-        "CPF_CNPJ_CLIENTE": dados.cpf_cnpj_cliente,
-        "ENDERECO_CLIENTE": dados.endereco_cliente,
-        "VALOR": dados.valor,
-        "VALOR_EXTENSO": dados.valor_extenso,
-        "DESCRICAO_PAGAMENTO": dados.descricao_pagamento,
-        "VINCULO_DOCUMENTO": dados.vinculo_documento,
-        "DESCRICAO_OBRA_SERVICO": dados.descricao_obra_servico,
-        "ENDERECO_OBRA": dados.endereco_obra,
-        "FORMA_PAGAMENTO": dados.forma_pagamento,
-        "DATA_PAGAMENTO": dados.data_pagamento,
-        "CIDADE_DATA": dados.cidade_data,
-        "RESPONSAVEL": dados.responsavel
-    }
+    "NUMERO_RECIBO": dados.numero_recibo,
+    "ANO_RECIBO": dados.ano_recibo,
+    "CLIENTE_NOME": dados.nome_cliente,
+    "CLIENTE_CPF_CNPJ": dados.cpf_cnpj_cliente,
+    "CLIENTE_ENDERECO": dados.endereco_cliente,
+    "VALOR_NUMERICO": dados.valor,
+    "VALOR_EXTENSO": dados.valor_extenso,
+    "DESCRICAO_PAGAMENTO": dados.descricao_pagamento,
+    "REFERENCIA_PROPOSTA_CONTRATO": dados.vinculo_documento,
+    "DESCRICAO_OBRA_SERVICO": dados.descricao_obra_servico,
+    "ENDERECO_OBRA": dados.endereco_obra,
+    "FORMA_PAGAMENTO": dados.forma_pagamento,
+    "DATA_PAGAMENTO": dados.data_pagamento,
+    "CIDADE_UF": dados.cidade_uf,
+    "DIA": dados.dia,
+    "MES_EXTENSO": dados.mes_extenso,
+    "ANO": dados.ano,
+    "RESPONSAVEL": dados.responsavel
+}
 
     docx_filename = f"recibo_domum_{uuid.uuid4().hex}.docx"
     docx_path = os.path.join(OUTPUT_DIR, docx_filename)
