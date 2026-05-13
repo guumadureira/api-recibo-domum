@@ -23,6 +23,7 @@ app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
 class ReciboRequest(BaseModel):
     numero_recibo: str
+    ano_recibo: str
     nome_cliente: str
     cpf_cnpj_cliente: str
     endereco_cliente: str
@@ -34,9 +35,11 @@ class ReciboRequest(BaseModel):
     endereco_obra: str
     forma_pagamento: str
     data_pagamento: str
-    cidade_data: str
+    cidade_uf: str
+    dia: str
+    mes_extenso: str
+    ano: str
     responsavel: str
-
 
 @app.get("/")
 def health_check():
@@ -68,22 +71,28 @@ def gerar_recibo(
 
     contexto = {
     "NUMERO_RECIBO": dados.numero_recibo,
-    "ANO_RECIBO": dados.ano_recibo,
+    "ANO_RECIBO": dados.ano_recibo or dados.ano or "",
+
     "CLIENTE_NOME": dados.nome_cliente,
     "CLIENTE_CPF_CNPJ": dados.cpf_cnpj_cliente,
     "CLIENTE_ENDERECO": dados.endereco_cliente,
+
     "VALOR_NUMERICO": dados.valor,
     "VALOR_EXTENSO": dados.valor_extenso,
+
     "DESCRICAO_PAGAMENTO": dados.descricao_pagamento,
     "REFERENCIA_PROPOSTA_CONTRATO": dados.vinculo_documento,
     "DESCRICAO_OBRA_SERVICO": dados.descricao_obra_servico,
     "ENDERECO_OBRA": dados.endereco_obra,
+
     "FORMA_PAGAMENTO": dados.forma_pagamento,
     "DATA_PAGAMENTO": dados.data_pagamento,
-    "CIDADE_UF": dados.cidade_uf,
-    "DIA": dados.dia,
-    "MES_EXTENSO": dados.mes_extenso,
-    "ANO": dados.ano,
+
+    "CIDADE_UF": dados.cidade_uf or "",
+    "DIA": dados.dia or "",
+    "MES_EXTENSO": dados.mes_extenso or "",
+    "ANO": dados.ano or "",
+
     "RESPONSAVEL": dados.responsavel
 }
 
