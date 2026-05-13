@@ -1,5 +1,6 @@
 import os
 import uuid
+import subprocess
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -7,7 +8,7 @@ from docxtpl import DocxTemplate
 
 app = FastAPI(
     title="API Geradora de Recibos Domum Engenharia",
-    version="1.0.0"
+    version="1.1.0"
 )
 
 API_SECRET_TOKEN = os.getenv("API_SECRET_TOKEN", "")
@@ -38,7 +39,8 @@ class ReciboRequest(BaseModel):
 def health_check():
     return {
         "status": "online",
-        "service": "API Geradora de Recibos Domum Engenharia"
+        "service": "API Geradora de Recibos Domum Engenharia",
+        "output": "pdf"
     }
 
 
@@ -77,15 +79,42 @@ def gerar_recibo(
         "RESPONSAVEL": dados.responsavel
     }
 
+    docx_filename = f"recibo_domum_{uuid.uuid4().hex}.docx"
+    docx_path = os.path.join(OUTPUT_DIR, docx_filename)
+
     doc.render(contexto)
+    doc.save(docx_path)
 
-    filename = f"recibo_domum_{uuid.uuid4().hex}.docx"
-    output_path = os.path.join(OUTPUT_DIR, filename)
+    try:
+        subprocess.run(
+            [
+                "libreoffice",
+                "--headless",
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                OUTPUT_DIR,
+                docx_path
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao converter DOCX para PDF: {e.stderr}"
+        )
 
-    doc.save(output_path)
+    pdf_filename = docx_filename.replace(".docx", ".pdf")
+    pdf_path = os.path.join(OUTPUT_DIR, pdf_filename)
+
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=500, detail="PDF não foi gerado corretamente.")
 
     return FileResponse(
-        output_path,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=filename
+        pdf_path,
+        media_type="application/pdf",
+        filename=pdf_filename
     )
